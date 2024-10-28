@@ -1,0 +1,109 @@
+CREATE DATABASE Record_collection;
+GO
+USE Record_Collection;
+
+
+DROP TABLE IF EXISTS AlbumGenre;
+DROP TABLE IF EXISTS AlbumArtist;
+DROP TABLE IF EXISTS Album;
+DROP TABLE IF EXISTS Writer;
+DROP TABLE IF EXISTS Producer;
+DROP TABLE IF EXISTS Musician;
+DROP TABLE IF EXISTS IndividualArtist;
+DROP TABLE IF EXISTS Band;
+DROP TABLE IF EXISTS Artist;
+DROP TABLE IF EXISTS Genre;
+
+
+CREATE TABLE Genre (
+	GenreID INT IDENTITY(1,1),
+	GenreName VARCHAR(50) UNIQUE,
+	ParentGenreID INT NULL,
+	CONSTRAINT PK_Genre PRIMARY KEY (GenreID),
+	CONSTRAINT FK_Genre_ParentGenre FOREIGN KEY (ParentGenreID) REFERENCES Genre(GenreID)
+);
+
+CREATE TABLE Artist (
+	ArtistID INT IDENTITY(1,1),
+	Country VARCHAR(50) NULL,
+	MainGenreID INT NOT NULL,
+	FirstName VARCHAR(50) NULL,
+	LastName VARCHAR(50) NULL,
+	GrammyWins INT NOT NULL,
+	CONSTRAINT FK_Artist_MainGenreID FOREIGN KEY (MainGenreID) REFERENCES Genre(GenreID),
+	CONSTRAINT PK_Artist PRIMARY KEY (ArtistID)
+);
+
+CREATE TABLE Band (
+	ArtistID INT,
+	BandName VARCHAR(75) NOT NULL, 
+	FormationYear INT NULL,
+	MemberCount INT NULL,
+	CONSTRAINT FK_Band_ArtistID FOREIGN KEY (ArtistID) REFERENCES Artist(ArtistID) ON DELETE CASCADE,
+	CONSTRAINT PK_Band PRIMARY KEY (ArtistID)
+);
+
+CREATE TABLE IndividualArtist (
+	ArtistID INT,
+	StageName VARCHAR(75) NOT NULL,
+	BirthYear INT NOT NULL,
+	DebutYear INT NOT NULL,
+	CONSTRAINT FK_IndividualArtist_ArtistID FOREIGN KEY (ArtistID) REFERENCES Artist(ArtistID) ON DELETE CASCADE,
+	CONSTRAINT PK_IndividualArtist PRIMARY KEY (ArtistID)
+);
+
+
+CREATE TABLE Musician (
+	ArtistID INT,
+	MainInstrument VARCHAR(50) NOT NULL,
+	SecondaryInstrument VARCHAR(50) NULL,
+	CONSTRAINT FK_Musician_ArtistID FOREIGN KEY (ArtistID) REFERENCES Artist(ArtistID) ON DELETE CASCADE,
+	CONSTRAINT PK_Musician PRIMARY KEY (ArtistID)
+);
+
+
+CREATE TABLE Producer (
+	ArtistID INT,
+	Specialization VARCHAR(50) NOT NULL,
+	Studio VARCHAR(65) NULL,
+	CONSTRAINT FK_Producer_ArtistID FOREIGN KEY (ArtistID) REFERENCES Artist(ArtistID) ON DELETE CASCADE,
+	CONSTRAINT PK_Producer PRIMARY KEY (ArtistID)
+);
+
+CREATE TABLE Writer (
+	ArtistID INT,
+	WriterType VARCHAR(50) NOT NULL,
+	PublishingCompany VARCHAR(75) NULL,
+	LyricLanguage VARCHAR(50) NULL,
+	CONSTRAINT FK_Writer_ArtistID FOREIGN KEY (ArtistID) REFERENCES Artist(ArtistID) ON DELETE CASCADE,
+	CONSTRAINT PK_Writer PRIMARY KEY (ArtistID)
+);
+
+
+CREATE TABLE Album (
+	AlbumID INT IDENTITY(1,1),
+	Title VARCHAR(100) NOT NULL,
+	ReleaseYear INT NOT NULL,
+	SongCount INT NOT NULL, -- number of songs
+	Duration INT NOT NULL, -- duration in minutes
+	CONSTRAINT PK_Album PRIMARY KEY (AlbumID)
+);
+
+CREATE TABLE AlbumArtist (
+	AlbumID INT,
+	ArtistID INT,
+	ArtistRole VARCHAR(50),
+	CONSTRAINT FK_AlbumArtist_AlbumID FOREIGN KEY (AlbumID) REFERENCES Album(AlbumID) ON DELETE CASCADE,
+	CONSTRAINT FK_AlbumArtist_ArtistID FOREIGN KEY (ArtistID) REFERENCES Artist(ArtistID),
+	CONSTRAINT PK_AlbumArtist PRIMARY KEY (AlbumID, ArtistID, ArtistRole)
+);
+
+CREATE TABLE AlbumGenre (
+	AlbumID INT NOT NULL,
+	GenreID INT NOT NULL,
+	CONSTRAINT FK_AlbumGenre_AlbumID FOREIGN KEY (AlbumID) REFERENCES Album(AlbumID) ON DELETE CASCADE,
+	CONSTRAINT FK_AlbumGenre_GenreID FOREIGN KEY (GenreID) REFERENCES Genre(GenreID) ON DELETE CASCADE,
+	CONSTRAINT PK_AlbumGenre PRIMARY KEY (AlbumID, GenreID)
+);
+
+CREATE INDEX Album_Title_Index ON Album(Title);
